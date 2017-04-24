@@ -28,6 +28,7 @@ class TwoLinkArmEnv(gym.core.Env):
                  noise_free=True,
                  noise_mu=None,
                  noise_sigma=None):
+        # from pudb import set_trace; set_trace()
         self.observation_space = gym.spaces.Box(
             low=np.array([-np.pi, -np.pi, -np.inf, -np.inf]),
             high=np.array([np.pi, np.pi, np.inf, np.inf]))
@@ -35,12 +36,14 @@ class TwoLinkArmEnv(gym.core.Env):
             low=np.array([-np.inf, -np.inf]), high=np.array([np.inf, np.inf]))
 
         if Q is None:
+            #what is Q?
             self.Q = np.zeros((self.DOF * 2, self.DOF * 2))
             self.Q[:self.DOF, :self.DOF] = np.eye(self.DOF) * 1000.0
         else:
-            self.R = R
+            self.Q = Q
 
         if R is None:
+            #what is R?
             self.R = np.eye(self.DOF) * 0.001
         else:
             self.R = R
@@ -91,7 +94,6 @@ class TwoLinkArmEnv(gym.core.Env):
         self.q = self.init_q.copy()
         self.dq = self.init_dq.copy()
         self.t = 0.
-
         return np.hstack((self.q, self.dq))
 
     @property
@@ -114,7 +116,7 @@ class TwoLinkArmEnv(gym.core.Env):
     @property
     def goal(self):
         return np.hstack((self.goal_q, self.goal_dq))
-
+        
     def _step(self, u, dt=None):
         if dt is None:
             dt = self.dt
