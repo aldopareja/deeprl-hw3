@@ -84,7 +84,8 @@ def cost_final(env, x):
     l, l_x, l_xx The first term is the loss, where the remaining terms are derivatives respect to the
     corresponding variables
     """
-    return np.sum((x - env.goal)**2) * 1e4, 2 * (x - env.goal) * 1e4, 2 * np.eye(4) * 1e4
+    w = 1e7
+    return np.sum((x - env.goal)**2) * w, 2 * (x - env.goal) * w, 2 * np.eye(4) * w
 
 
 def simulate(env, x0, U):
@@ -103,7 +104,7 @@ def total_cost(env, X, U):
     return c
 
 
-def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
+def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e3, startU=None):
     """Calculate the optimal control input for the given state.
 
 
@@ -124,8 +125,11 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
     U: np.array
       The SEQUENCE of commands to execute. The size should be (tN, #parameters)
     """
-    U = np.random.normal(size=(tN, 2), scale=10.0)
-    alpha = 0.1
+    if startU is None:
+        U = np.random.normal(size=(int(tN), 2), scale=10.0)
+    else:
+        U = startU
+    alpha = 0.5
     mu = 1.0
     for _ in xrange(int(max_iter)):
         X = simulate(sim_env, env.state, U)
@@ -155,6 +159,19 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e5):
         c_1 = total_cost(env, Xp, Up)
         print c_0, '->', c_1
         U = Up
-        if abs(c_1 - c_0) < 1e-3:
+        if abs(c_1 - c_0) < 1e-1:
           break
     return U
+
+class MPC:
+    def __init__(self, tN):
+      self.tN = int(tN)
+      self.U = np.random.normal(scale=10.0, size=(self.tN, 2))
+    def __call__(self, env, sim_env):
+      tmp = calc_ilqr_input(env, sim_env, tN=self.tN, startU=self.U)
+      self.U = tmp[1:]
+      self.tN -= 1
+      return tmp[0]
+    
+# def mpc_ilqr(env, sim_env, tN=100):
+#     return calc_ilqr_input(env, sim_env, tN=tN)[0]
