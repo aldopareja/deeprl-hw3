@@ -104,7 +104,7 @@ def total_cost(env, X, U):
     return c
 
 
-def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e3, startU=None):
+def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e3, startU=None, record_cost=None):
     """Calculate the optimal control input for the given state.
 
 
@@ -159,6 +159,8 @@ def calc_ilqr_input(env, sim_env, tN=100, max_iter=1e3, startU=None):
         c_1 = total_cost(env, Xp, Up)
         print c_0, '->', c_1
         U = Up
+        if record_cost is not None:
+            record_cost.append(c_1)
         if abs(c_1 - c_0) < 1e-1:
           break
     return U

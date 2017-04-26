@@ -71,8 +71,17 @@ def run_ilqr(ENV):
     env.reset()
     sim_env = gym.make(ENV)
     sim_env.reset()
-    U = ilqr.calc_ilqr_input(env, sim_env)
+    iter_cost = []
+    U = ilqr.calc_ilqr_input(env, sim_env, record_cost=iter_cost)
     run_inputs(env, U, ENV)
+    plt.figure(3)
+    plt.plot(iter_cost)
+    plt.title('cost')
+    # plt.show()
+    plt.savefig('ilqr-%s-3.png' % ENV[-2:], bbox_inches='tight')
+    plt.clf()
+    print(iter_cost[:5])
+
 
 
 def run_mpc(ENV, n=100):
@@ -144,10 +153,10 @@ def run_mpc(ENV, n=100):
 
 
 def main():
-    run_ilqr('TwoLinkArm-v0')
-    run_ilqr('TwoLinkArm-v1')
+    # run_ilqr('TwoLinkArm-v0')
+    # run_ilqr('TwoLinkArm-v1')
     run_mpc('TwoLinkArm-v0')
-    run_mpc('TwoLinkArm-v1')
+    # run_mpc('TwoLinkArm-v1')
 
 if __name__ == '__main__':
     main()
